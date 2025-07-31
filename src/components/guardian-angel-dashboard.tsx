@@ -105,8 +105,10 @@ export default function GuardianAngelDashboard() {
   };
 
   const makeEmergencyCall = () => {
-    console.log("Attempting to call 877-812-4700");
-    window.location.href = "tel:8778124700";
+    // This function is currently disabled as per user request.
+    console.log("Emergency call disabled.");
+    // console.log("Attempting to call 877-812-4700");
+    // window.location.href = "tel:8778124700";
   };
   
   const triggerFallAlert = useCallback(() => {
@@ -123,7 +125,7 @@ export default function GuardianAngelDashboard() {
   }, [isEmergency]);
 
 
-  const triggerEmergency = useCallback((message: string, immediateCall: boolean = false) => {
+  const triggerEmergency = useCallback((message: string) => {
     if (isEmergency) return;
 
     console.log("Emergency Triggered:", message);
@@ -131,33 +133,11 @@ export default function GuardianAngelDashboard() {
     setStatusIcon(<Siren className="h-8 w-8 text-destructive animate-ping" />);
     playSiren();
     startVibration();
-    sendSMS();
     
     const emergencyMessage = "emergency help help";
+    setStatusText("EMERGENCY");
+    speak(emergencyMessage);
 
-    if (immediateCall) {
-      setStatusText("EMERGENCY - Calling now...");
-      speak(emergencyMessage);
-      makeEmergencyCall();
-    } else {
-      let countdown = EMERGENCY_CALL_DELAY;
-      setStatusText(`EMERGENCY - Calling in ${countdown}s`);
-      speak(emergencyMessage);
-
-      countdownIntervalRef.current = setInterval(() => {
-        countdown--;
-        if (countdown > 0) {
-          setStatusText(`EMERGENCY - Calling in ${countdown}s`);
-        } else {
-          setStatusText("EMERGENCY - Calling...");
-          if(countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-        }
-      }, 1000);
-
-      emergencyTimeoutRef.current = setTimeout(() => {
-        makeEmergencyCall();
-      }, EMERGENCY_CALL_DELAY * 1000);
-    }
   }, [isEmergency]);
 
   const handleStopEmergency = () => {
@@ -249,7 +229,7 @@ export default function GuardianAngelDashboard() {
       shakeCount.current += 1;
 
       if (shakeCount.current === 3) {
-        triggerEmergency("Shake detected. Emergency initiated.", true); // Immediate call for shake
+        triggerEmergency("Shake detected. Emergency initiated.");
       }
 
       setTimeout(() => {
@@ -316,7 +296,7 @@ export default function GuardianAngelDashboard() {
 
 
   const handleEmergencyAlert = () => {
-    triggerEmergency("Emergency alert button pressed.", true);
+    triggerEmergency("Emergency alert button pressed.");
   };
   
   const sendSMS = () => {
@@ -326,7 +306,7 @@ export default function GuardianAngelDashboard() {
           const { latitude, longitude } = position.coords;
           const message = `Emergency! I need help. My location is: https://www.google.com/maps?q=${latitude},${longitude}`;
           console.log("SMS to be sent:", message);
-          const smsUri = `sms:8778124700?body=${encodeURIComponent(message)}`;
+          const smsUri = `sms:?body=${encodeURIComponent(message)}`;
           window.location.href = smsUri;
           toast({
             title: "SMS Ready",
@@ -506,7 +486,3 @@ export default function GuardianAngelDashboard() {
     </>
   );
 }
-
-    
-
-    
