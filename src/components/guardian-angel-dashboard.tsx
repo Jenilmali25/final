@@ -22,13 +22,14 @@ import {
   BellOff,
   TestTube2,
   AlertTriangle,
+  Vibrate,
 } from "lucide-react";
 import { filterAudioCommands } from "@/ai/flows/filter-audio-commands";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "./ui/separator";
 
 // Siren sound in base64 format (WAV for better compatibility)
-const SIREN_SOUND_DATA_URI = "data:audio/wav;base64,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";
+const SIREN_SOUND_DATA_URI = "data:audio/wav;base64,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";
 
 
 // Fall Detection Thresholds
@@ -93,18 +94,21 @@ export default function GuardianAngelDashboard() {
   };
   
   const startVibration = () => {
-    if (isClient && navigator.vibrate) {
-        // Vibrate in a continuous pattern: 500ms vibrate, 200ms pause, repeated.
-        navigator.vibrate([500, 200, 500, 200, 500]); 
+    if ("vibrate" in navigator) {
+      const didVibrate = navigator.vibrate([1000, 500, 1000, 500, 1000]); // Vibrate 1s, pause 0.5s x3
+      console.log("Vibration triggered:", didVibrate);
+    } else {
+      console.warn("Vibration API not supported on this device.");
     }
   };
 
   const stopVibration = () => {
-    if (isClient && navigator.vibrate) {
-      // Stop any ongoing vibration
+    if ("vibrate" in navigator) {
       navigator.vibrate(0);
+      console.log("Vibration stopped");
     }
   };
+
 
   const makeEmergencyCall = () => {
     // This function is currently disabled as per user request.
@@ -471,9 +475,23 @@ export default function GuardianAngelDashboard() {
                 <Send className="h-4 w-4" />
               </Button>
             </form>
-             <Button onClick={handleTestFall} size="sm" variant="outline" className="w-full" disabled={isEmergency}>
-                <TestTube2 className="mr-2 h-4 w-4" /> Simulate Fall Detection
-             </Button>
+             <div className="grid grid-cols-2 gap-2">
+               <Button onClick={handleTestFall} size="sm" variant="outline" className="w-full" disabled={isEmergency}>
+                  <TestTube2 className="mr-2 h-4 w-4" /> Simulate Fall
+               </Button>
+               <Button
+                  onClick={() => {
+                    console.log("Manual vibration test");
+                    startVibration();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  disabled={isEmergency}
+                >
+                 <Vibrate className="mr-2 h-4 w-4" /> Test Vibration
+                </Button>
+             </div>
           </div>
         </CardContent>
         <CardFooter className="flex-col gap-2">
