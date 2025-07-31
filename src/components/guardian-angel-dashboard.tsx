@@ -33,11 +33,11 @@ const SIREN_SOUND_FILE = "/loud-emergency-alarm-54635.mp3";
 
 
 // Fall Detection Thresholds
-const FREEFALL_THRESHOLD = 0.5; // m/s^2
-const FREEFALL_TIME_MS = 300;
-const IMPACT_THRESHOLD = 25; // m/s^2
+const FREEFALL_THRESHOLD = 0.5; // m/s^2 - Start of a fall
+const FREEFALL_TIME_MS = 300; // ms in freefall
+const IMPACT_THRESHOLD = 30; // m/s^2 - Increased for more precision on impact
 const INACTIVITY_THRESHOLD = 1.5; // m/s^2 (near-zero movement)
-const INACTIVITY_TIME_MS = 3000; // 3 seconds
+const INACTIVITY_TIME_MS = 3000; // 3 seconds of no movement after impact
 
 const SHAKE_THRESHOLD = 15;
 const SHAKE_TIMEOUT = 500;
@@ -522,5 +522,3 @@ export default function GuardianAngelDashboard() {
     </>
   );
 }
-
-    
