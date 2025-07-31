@@ -93,13 +93,14 @@ export default function GuardianAngelDashboard() {
   
   const startVibration = () => {
     if (isClient && navigator.vibrate) {
-        // Vibrate 3 times
+        // Vibrate in a continuous pattern: 500ms vibrate, 200ms pause, repeated.
         navigator.vibrate([500, 200, 500, 200, 500]); 
     }
   };
 
   const stopVibration = () => {
     if (isClient && navigator.vibrate) {
+      // Stop any ongoing vibration
       navigator.vibrate(0);
     }
   };
