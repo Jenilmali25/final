@@ -70,6 +70,7 @@ export default function GuardianAngelDashboard() {
 
   const speak = (text: string) => {
     if (isClient && window.speechSynthesis) {
+      window.speechSynthesis.cancel(); // Stop any previous speech
       const utterance = new SpeechSynthesisUtterance(text);
       window.speechSynthesis.speak(utterance);
     }
@@ -113,17 +114,18 @@ export default function GuardianAngelDashboard() {
     console.log("Emergency Triggered:", message);
     setIsEmergency(true);
     setStatusIcon(<Siren className="h-8 w-8 text-destructive animate-ping" />);
-    speak(message);
     playSiren();
     startVibration();
     sendSMS();
 
     if (immediateCall) {
       setStatusText("EMERGENCY - Calling now...");
+      speak("Emergency alert. Calling for help immediately.");
       makeEmergencyCall();
     } else {
       let countdown = EMERGENCY_CALL_DELAY;
       setStatusText(`EMERGENCY - Calling in ${countdown}s`);
+      speak(`${message}. Calling for help in ${countdown} seconds.`);
 
       countdownIntervalRef.current = setInterval(() => {
         countdown--;
@@ -248,12 +250,6 @@ export default function GuardianAngelDashboard() {
       setStatusText("Idle");
       setStatusIcon(<HeartPulse className="h-8 w-8 text-primary" />);
     }
-
-    return () => {
-      if (isMonitoring && !isEmergency) {
-        speak("Monitoring stopped.");
-      }
-    };
   }, [isMonitoring, isEmergency]);
 
   const handleToggleMonitoring = () => {
@@ -267,18 +263,22 @@ export default function GuardianAngelDashboard() {
               .then((permissionState: string) => {
                 if (permissionState === 'granted') {
                    console.log("Motion permission granted");
+                   speak("Monitoring started.");
                 } else {
                   toast({title: "Permission Denied", description: "Motion sensor access is required for fall detection."});
                   setIsMonitoring(false);
                 }
               })
               .catch(console.error);
+          } else {
+             speak("Monitoring started.");
           }
         } else {
             // Reset fall detection state when stopping monitoring
             fallDetectionState.current = 'IDLE';
             freefallStartTime.current = null;
             impactTime.current = null;
+            speak("Monitoring stopped.");
         }
         return newIsMonitoring;
     });
@@ -298,7 +298,9 @@ export default function GuardianAngelDashboard() {
           // In a real app, you would use a third-party service (like Twilio) to send this SMS.
           // The line below is a placeholder to show how it would be initiated.
           const smsUri = `sms:8778124700?body=${encodeURIComponent(message)}`;
-          window.location.href = smsUri;
+          // This will open the user's messaging app, but not send the message automatically.
+          // window.location.href = smsUri;
+          console.log("Attempting to open SMS URI:", smsUri);
           toast({
             title: "SMS Ready",
             description: "Opening messaging app to send alert.",
@@ -373,7 +375,22 @@ export default function GuardianAngelDashboard() {
   };
 
   if (!isClient) {
-    return null;
+    return (
+      <Card className="w-full max-w-md shadow-2xl bg-card/80 backdrop-blur-sm">
+        <CardHeader className="text-center">
+           <div className="flex items-center justify-center gap-2">
+            <Shield className="h-8 w-8 text-primary" />
+            <CardTitle className="text-3xl font-headline">
+              Guardian Angel
+            </CardTitle>
+          </div>
+          <CardDescription>Your personal safety companion.</CardDescription>
+        </CardHeader>
+        <CardContent>
+           <p className="text-center text-muted-foreground">Loading...</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -403,7 +420,7 @@ export default function GuardianAngelDashboard() {
              </Button>
           ) : (
             <div className="grid grid-cols-1 gap-4">
-              <Button onClick={handleToggleMonitoring} size="lg" disabled={isEmergency}>
+              <Button onClick={handleToggleMonitoring} size="lg">
                 {isMonitoring ? (
                   <>
                     <Square className="mr-2 h-5 w-5" /> Stop Monitoring
@@ -418,7 +435,6 @@ export default function GuardianAngelDashboard() {
                 onClick={handleEmergencyAlert}
                 size="lg"
                 className="bg-accent text-accent-foreground hover:bg-accent/90"
-                disabled={isEmergency}
               >
                 <Siren className="mr-2 h-5 w-5" /> Emergency Alert
               </Button>
@@ -462,5 +478,3 @@ export default function GuardianAngelDashboard() {
     </>
   );
 }
-
-    
