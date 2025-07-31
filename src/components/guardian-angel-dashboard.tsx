@@ -21,6 +21,7 @@ import {
   Send,
   BellOff,
   TestTube2,
+  AlertTriangle,
 } from "lucide-react";
 import { filterAudioCommands } from "@/ai/flows/filter-audio-commands";
 import { useToast } from "@/hooks/use-toast";
@@ -107,6 +108,20 @@ export default function GuardianAngelDashboard() {
     console.log("Attempting to call 877-812-4700");
     window.location.href = "tel:8778124700";
   };
+  
+  const triggerFallAlert = useCallback(() => {
+    if (isEmergency) return;
+    
+    console.log("Fall Alert Triggered");
+    setIsEmergency(true);
+    setStatusText("Fall Detected!");
+    setStatusIcon(<AlertTriangle className="h-8 w-8 text-destructive animate-ping" />);
+    playSiren();
+    startVibration();
+    speak("Fall detected. Please check your safety.");
+    // No call is made here, just the alert.
+  }, [isEmergency]);
+
 
   const triggerEmergency = useCallback((message: string, immediateCall: boolean = false) => {
     if (isEmergency) return;
@@ -150,7 +165,7 @@ export default function GuardianAngelDashboard() {
     setStatusIcon(<HeartPulse className="h-8 w-8 text-primary" />);
     stopSiren();
     stopVibration();
-    speak("Emergency alert cancelled.");
+    speak("Alert cancelled.");
 
     fallDetectionState.current = 'IDLE';
     freefallStartTime.current = null;
@@ -188,8 +203,13 @@ export default function GuardianAngelDashboard() {
         break;
       
       case 'FREEFALL':
-        if (freefallStartTime.current && (now - freefallStartTime.current) > FREEFALL_TIME_MS) {
-            if (magnitude > IMPACT_THRESHOLD) {
+         if (!freefallStartTime.current) {
+            // Should not happen, but as a safeguard
+            fallDetectionState.current = 'IDLE';
+            break;
+        }
+        if ((now - freefallStartTime.current) > FREEFALL_TIME_MS) {
+             if (magnitude > IMPACT_THRESHOLD) {
                 fallDetectionState.current = 'IMPACT';
                 impactTime.current = now;
             } else if (magnitude >= FREEFALL_THRESHOLD) {
@@ -201,9 +221,14 @@ export default function GuardianAngelDashboard() {
         break;
         
       case 'IMPACT':
-        if (impactTime.current && (now - impactTime.current) > INACTIVITY_TIME_MS) {
+         if (!impactTime.current) {
+            // Should not happen, but as a safeguard
+            fallDetectionState.current = 'IDLE';
+            break;
+        }
+        if ((now - impactTime.current) > INACTIVITY_TIME_MS) {
           if (magnitude < INACTIVITY_THRESHOLD) {
-            triggerEmergency("Fall Detected. Initiating emergency response.");
+            triggerFallAlert();
           }
           // Reset after check
           fallDetectionState.current = 'IDLE';
@@ -229,7 +254,7 @@ export default function GuardianAngelDashboard() {
         shakeCount.current = 0;
       }, SHAKE_COUNT_RESET_TIMEOUT);
     }
-  }, [isMonitoring, isEmergency, triggerEmergency]);
+  }, [isMonitoring, isEmergency, triggerEmergency, triggerFallAlert]);
 
   useEffect(() => {
     if (isClient && isMonitoring) {
@@ -254,35 +279,39 @@ export default function GuardianAngelDashboard() {
 
   const handleToggleMonitoring = () => {
     if (isEmergency) return;
-    setIsMonitoring((prev) => {
-        const newIsMonitoring = !prev;
-        if (newIsMonitoring) {
-          // Request permissions when starting monitoring
-          if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
-            (DeviceMotionEvent as any).requestPermission()
-              .then((permissionState: string) => {
-                if (permissionState === 'granted') {
-                   console.log("Motion permission granted");
-                   speak("Monitoring started.");
-                } else {
-                  toast({title: "Permission Denied", description: "Motion sensor access is required for fall detection."});
-                  setIsMonitoring(false);
-                }
-              })
-              .catch(console.error);
+    
+    // If we are currently monitoring, stop it.
+    if(isMonitoring) {
+      setIsMonitoring(false);
+      fallDetectionState.current = 'IDLE';
+      freefallStartTime.current = null;
+      impactTime.current = null;
+      speak("Monitoring stopped.");
+      return;
+    }
+
+    // If we are not monitoring, start it, but first request permissions.
+    if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
+      (DeviceMotionEvent as any).requestPermission()
+        .then((permissionState: string) => {
+          if (permissionState === 'granted') {
+              console.log("Motion permission granted");
+              setIsMonitoring(true);
           } else {
-             speak("Monitoring started.");
+            toast({title: "Permission Denied", description: "Motion sensor access is required for fall detection."});
+            setIsMonitoring(false);
           }
-        } else {
-            // Reset fall detection state when stopping monitoring
-            fallDetectionState.current = 'IDLE';
-            freefallStartTime.current = null;
-            impactTime.current = null;
-            speak("Monitoring stopped.");
-        }
-        return newIsMonitoring;
-    });
+        })
+        .catch((error) => {
+          console.error(error);
+          toast({title: "Permission Error", description: "Could not request motion sensor permission.", variant: "destructive"});
+        });
+    } else {
+        // For browsers that don't require explicit permission
+        setIsMonitoring(true);
+    }
   };
+
 
   const handleEmergencyAlert = () => {
     triggerEmergency("Emergency alert button pressed.", true);
@@ -295,12 +324,8 @@ export default function GuardianAngelDashboard() {
           const { latitude, longitude } = position.coords;
           const message = `Emergency! I need help. My location is: https://www.google.com/maps?q=${latitude},${longitude}`;
           console.log("SMS to be sent:", message);
-          // In a real app, you would use a third-party service (like Twilio) to send this SMS.
-          // The line below is a placeholder to show how it would be initiated.
           const smsUri = `sms:8778124700?body=${encodeURIComponent(message)}`;
-          // This will open the user's messaging app, but not send the message automatically.
-          // window.location.href = smsUri;
-          console.log("Attempting to open SMS URI:", smsUri);
+          window.location.href = smsUri;
           toast({
             title: "SMS Ready",
             description: "Opening messaging app to send alert.",
@@ -370,9 +395,10 @@ export default function GuardianAngelDashboard() {
       toast({ title: "Cannot test during an active emergency.", variant: "destructive" });
       return;
     }
-    toast({ title: "Simulating Fall Event", description: "This will trigger the emergency countdown." });
-    triggerEmergency("Simulated fall detected.");
+    toast({ title: "Simulating Fall Event", description: "This will trigger the fall alert (siren and voice)." });
+    triggerFallAlert();
   };
+
 
   if (!isClient) {
     return (
@@ -478,3 +504,5 @@ export default function GuardianAngelDashboard() {
     </>
   );
 }
+
+    
