@@ -93,7 +93,7 @@ export default function GuardianAngelDashboard() {
   
   const startVibration = () => {
     if (isClient && navigator.vibrate) {
-        // A continuous vibration pattern
+        // Vibrate 3 times
         navigator.vibrate([500, 200, 500, 200, 500]); 
     }
   };
@@ -132,15 +132,17 @@ export default function GuardianAngelDashboard() {
     playSiren();
     startVibration();
     sendSMS();
+    
+    const emergencyMessage = "emergency help help";
 
     if (immediateCall) {
       setStatusText("EMERGENCY - Calling now...");
-      speak("Emergency alert. Calling for help immediately.");
+      speak(emergencyMessage);
       makeEmergencyCall();
     } else {
       let countdown = EMERGENCY_CALL_DELAY;
       setStatusText(`EMERGENCY - Calling in ${countdown}s`);
-      speak(`${message}. Calling for help in ${countdown} seconds.`);
+      speak(emergencyMessage);
 
       countdownIntervalRef.current = setInterval(() => {
         countdown--;
@@ -504,5 +506,7 @@ export default function GuardianAngelDashboard() {
     </>
   );
 }
+
+    
 
     
