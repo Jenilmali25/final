@@ -47,6 +47,11 @@ export default function GuardianAngelDashboard() {
   const [isFiltering, setIsFiltering] = useState(false);
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const speak = (text: string) => {
     if (typeof window !== "undefined" && window.speechSynthesis) {
@@ -161,6 +166,10 @@ export default function GuardianAngelDashboard() {
       setCommand("");
     }
   };
+
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <>
