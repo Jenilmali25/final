@@ -260,7 +260,21 @@ export default function GuardianAngelDashboard() {
     if (isEmergency) return;
     setIsMonitoring((prev) => {
         const newIsMonitoring = !prev;
-        if (!newIsMonitoring) {
+        if (newIsMonitoring) {
+          // Request permissions when starting monitoring
+          if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
+            (DeviceMotionEvent as any).requestPermission()
+              .then((permissionState: string) => {
+                if (permissionState === 'granted') {
+                   console.log("Motion permission granted");
+                } else {
+                  toast({title: "Permission Denied", description: "Motion sensor access is required for fall detection."});
+                  setIsMonitoring(false);
+                }
+              })
+              .catch(console.error);
+          }
+        } else {
             // Reset fall detection state when stopping monitoring
             fallDetectionState.current = 'IDLE';
             freefallStartTime.current = null;
@@ -327,7 +341,7 @@ export default function GuardianAngelDashboard() {
           title: "Clear Command Detected",
           description: `Command: "${result.filteredSpeech}". Initiating emergency protocol.`,
         });
-        triggerEmergency(`Voice command: ${result.filteredSpeech}`);
+        triggerEmergency(`Voice command: ${result.filteredSpeech}`, true);
       } else {
         toast({
           title: "Command Unclear",
