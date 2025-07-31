@@ -13,31 +13,28 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   HeartPulse,
   Shield,
   Siren,
   Play,
   Square,
   Send,
-  ShieldAlert,
   BellOff,
+  TestTube2,
 } from "lucide-react";
 import { filterAudioCommands } from "@/ai/flows/filter-audio-commands";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "./ui/separator";
 
 // Siren sound in base64 format
-const SIREN_SOUND_DATA_URI = "data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU3LjU2LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABJbmZvAAAADwAAAEMAAwEAAAAAAEVOQ08AAAAsAAAATGF2YzU3LjY0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/8AABBABRQUEsAAAAIAAIAAAAAAAA//sYxBAIAMCore Media Audio1AwoFgiIs0RAAGYABRERPmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/8AABBABRQUEsAAAAIAAIAAAAAAAA//sYxBAIAMCore Media Audio1AwoFgiIs0RAAGYABRERPmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+const SIREN_SOUND_DATA_URI = "data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU3LjU2LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABJbmZvAAAADwAAAEMAAwEAAAAAAEVOQ08AAAAsAAAATGF2YzU3LjY0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/8AABBABRQUEsAAAAIAAIAAAAAAAA//sYxBAIAMCore Media Audio1AwoFgiIs0RAAGYABRERPmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/8AABBABRQUEsAAAAIAAIAAAAAAAA//sYxBAIAMCore Media Audio1AwoFgiIs0RAAGYABRERPmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+
+// Fall Detection Thresholds
+const FREEFALL_THRESHOLD = 0.5; // m/s^2
+const FREEFALL_TIME_MS = 300;
+const IMPACT_THRESHOLD = 25; // m/s^2
+const INACTIVITY_THRESHOLD = 1.5; // m/s^2 (near-zero movement)
+const INACTIVITY_TIME_MS = 3000; // 3 seconds
 
 const SHAKE_THRESHOLD = 15;
 const SHAKE_TIMEOUT = 500;
@@ -55,8 +52,15 @@ export default function GuardianAngelDashboard() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isClient, setIsClient] = useState(false);
   
+  // Shake detection refs
   const lastShakeTime = useRef(0);
   const shakeCount = useRef(0);
+  
+  // Fall detection state refs
+  const fallDetectionState = useRef<'IDLE' | 'FREEFALL' | 'IMPACT'>('IDLE');
+  const freefallStartTime = useRef<number | null>(null);
+  const impactTime = useRef<number | null>(null);
+
   const emergencyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -87,7 +91,8 @@ export default function GuardianAngelDashboard() {
   
   const startVibration = () => {
     if (navigator.vibrate) {
-      navigator.vibrate([200, 100, 200, 100, 200, 100, 200, 100, 200]); // Continuous pattern
+        // A continuous vibration pattern
+        navigator.vibrate([500, 200, 500, 200, 500]); 
     }
   };
 
@@ -145,6 +150,10 @@ export default function GuardianAngelDashboard() {
     stopVibration();
     speak("Emergency alert cancelled.");
 
+    fallDetectionState.current = 'IDLE';
+    freefallStartTime.current = null;
+    impactTime.current = null;
+
     if (emergencyTimeoutRef.current) {
       clearTimeout(emergencyTimeoutRef.current);
       emergencyTimeoutRef.current = null;
@@ -156,68 +165,109 @@ export default function GuardianAngelDashboard() {
   };
 
   const handleDeviceMotion = useCallback((event: DeviceMotionEvent) => {
-    const { accelerationIncludingGravity } = event;
-    if (!accelerationIncludingGravity) return;
+    if (!isMonitoring || isEmergency) return;
 
-    const { x, y, z } = accelerationIncludingGravity;
+    const { acceleration } = event;
+    if (!acceleration) return;
+
+    const { x, y, z } = acceleration;
     if (x === null || y === null || z === null) return;
     
-    const acceleration = Math.sqrt(x*x + y*y + z*z);
-
+    const magnitude = Math.sqrt(x*x + y*y + z*z);
     const now = Date.now();
-    if (acceleration > SHAKE_THRESHOLD) {
+
+    // Advanced Fall Detection Logic
+    switch (fallDetectionState.current) {
+      case 'IDLE':
+        if (magnitude < FREEFALL_THRESHOLD) {
+          fallDetectionState.current = 'FREEFALL';
+          freefallStartTime.current = now;
+        }
+        break;
+      
+      case 'FREEFALL':
+        if (freefallStartTime.current && (now - freefallStartTime.current) > FREEFALL_TIME_MS) {
+            if (magnitude > IMPACT_THRESHOLD) {
+                fallDetectionState.current = 'IMPACT';
+                impactTime.current = now;
+            } else if (magnitude >= FREEFALL_THRESHOLD) {
+                // Not a valid freefall, reset
+                fallDetectionState.current = 'IDLE';
+                freefallStartTime.current = null;
+            }
+        }
+        break;
+        
+      case 'IMPACT':
+        if (impactTime.current && (now - impactTime.current) > INACTIVITY_TIME_MS) {
+          if (magnitude < INACTIVITY_THRESHOLD) {
+            triggerEmergency("Fall Detected. Initiating emergency response.");
+          }
+          // Reset after check
+          fallDetectionState.current = 'IDLE';
+          freefallStartTime.current = null;
+          impactTime.current = null;
+        }
+        break;
+    }
+
+
+    // Shake Detection Logic
+    if (magnitude > SHAKE_THRESHOLD) {
       if (now - lastShakeTime.current < SHAKE_TIMEOUT) return;
 
       lastShakeTime.current = now;
       shakeCount.current += 1;
 
       if (shakeCount.current === 3) {
-        triggerEmergency("Shake detected. Emergency initiated.");
+        triggerEmergency("Shake detected. Emergency initiated.", true); // Immediate call for shake
       }
 
       setTimeout(() => {
         shakeCount.current = 0;
       }, SHAKE_COUNT_RESET_TIMEOUT);
     }
-  }, [triggerEmergency]);
+  }, [isMonitoring, isEmergency, triggerEmergency]);
 
   useEffect(() => {
-    if (isClient) {
+    if (isClient && isMonitoring) {
       window.addEventListener("devicemotion", handleDeviceMotion);
       return () => {
         window.removeEventListener("devicemotion", handleDeviceMotion);
       };
     }
-  }, [isClient, handleDeviceMotion]);
+  }, [isClient, isMonitoring, handleDeviceMotion]);
 
 
   useEffect(() => {
-    let fallTimeout: NodeJS.Timeout;
-
     if (isMonitoring && !isEmergency) {
-      setStatusText("Monitoring for falls...");
+      setStatusText("Monitoring...");
       setStatusIcon(<HeartPulse className="h-8 w-8 text-primary animate-pulse" />);
       speak("Monitoring started.");
-      // Simulate a fall detection after 5 seconds of monitoring
-      fallTimeout = setTimeout(() => {
-        triggerEmergency("Fall Detected. Initiating emergency response.");
-      }, 5000);
     } else if (!isMonitoring && !isEmergency) {
       setStatusText("Idle");
       setStatusIcon(<HeartPulse className="h-8 w-8 text-primary" />);
     }
 
     return () => {
-      clearTimeout(fallTimeout);
       if (isMonitoring && !isEmergency) {
         speak("Monitoring stopped.");
       }
     };
-  }, [isMonitoring, isEmergency, triggerEmergency]);
+  }, [isMonitoring, isEmergency]);
 
   const handleToggleMonitoring = () => {
     if (isEmergency) return;
-    setIsMonitoring((prev) => !prev);
+    setIsMonitoring((prev) => {
+        const newIsMonitoring = !prev;
+        if (!newIsMonitoring) {
+            // Reset fall detection state when stopping monitoring
+            fallDetectionState.current = 'IDLE';
+            freefallStartTime.current = null;
+            impactTime.current = null;
+        }
+        return newIsMonitoring;
+    });
   };
 
   const handleEmergencyAlert = () => {
@@ -297,6 +347,15 @@ export default function GuardianAngelDashboard() {
       setCommand("");
     }
   };
+  
+  const handleTestFall = () => {
+    if (isEmergency) {
+      toast({ title: "Cannot test during an active emergency.", variant: "destructive" });
+      return;
+    }
+    toast({ title: "Simulating Fall Event", description: "This will trigger the emergency countdown." });
+    triggerEmergency("Simulated fall detected.");
+  };
 
   if (!isClient) {
     return null;
@@ -356,7 +415,7 @@ export default function GuardianAngelDashboard() {
 
           <div className="space-y-4">
             <h3 className="text-center font-semibold text-muted-foreground">
-              Voice Command Simulation
+              Voice &amp; Test Tools
             </h3>
             <form onSubmit={handleFilterCommand} className="flex gap-2">
               <Input
@@ -371,6 +430,9 @@ export default function GuardianAngelDashboard() {
                 <Send className="h-4 w-4" />
               </Button>
             </form>
+             <Button onClick={handleTestFall} size="sm" variant="outline" className="w-full" disabled={isEmergency}>
+                <TestTube2 className="mr-2 h-4 w-4" /> Simulate Fall Detection
+             </Button>
           </div>
         </CardContent>
         <CardFooter className="flex-col gap-2">
