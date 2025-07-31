@@ -54,6 +54,7 @@ export default function GuardianAngelDashboard() {
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isClient, setIsClient] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
   
   // Shake detection refs
   const lastShakeTime = useRef(0);
@@ -111,10 +112,8 @@ export default function GuardianAngelDashboard() {
 
 
   const makeEmergencyCall = () => {
-    // This function is currently disabled as per user request.
-    console.log("Emergency call disabled.");
-    // console.log("Attempting to call 877-812-4700");
-    // window.location.href = "tel:8778124700";
+    console.log("Attempting to call 877-812-4700");
+    window.location.href = "tel:8778124700";
   };
   
   const triggerFallAlert = useCallback(() => {
@@ -122,12 +121,20 @@ export default function GuardianAngelDashboard() {
     
     console.log("Fall Alert Triggered");
     setIsEmergency(true);
-    setStatusText("Fall Detected!");
     setStatusIcon(<AlertTriangle className="h-8 w-8 text-destructive animate-ping" />);
     playSiren();
     startVibration();
-    speak("Emergency! Emergency! A fall has been detected. Please respond immediately. If you are unable to move or speak, help is on the way. Stay calm.");
-    // No call is made here, just the alert.
+    speak(`Emergency! A fall has been detected. Calling for help in ${EMERGENCY_CALL_DELAY} seconds. Press cancel to stop.`);
+
+    setCountdown(EMERGENCY_CALL_DELAY);
+
+    countdownIntervalRef.current = setInterval(() => {
+      setCountdown(prev => (prev !== null && prev > 1 ? prev - 1 : 0));
+    }, 1000);
+
+    emergencyTimeoutRef.current = setTimeout(() => {
+      makeEmergencyCall();
+    }, EMERGENCY_CALL_DELAY * 1000);
   }, [isEmergency]);
 
 
@@ -145,6 +152,13 @@ export default function GuardianAngelDashboard() {
     speak(emergencyMessage);
 
   }, [isEmergency]);
+  
+  useEffect(() => {
+    if (countdown !== null) {
+      setStatusText(`Calling for help in ${countdown}s`);
+    }
+  }, [countdown]);
+
 
   const handleStopEmergency = () => {
     setIsEmergency(false);
@@ -154,6 +168,8 @@ export default function GuardianAngelDashboard() {
     stopSiren();
     stopVibration();
     speak("Alert cancelled.");
+    
+    setCountdown(null);
 
     fallDetectionState.current = 'IDLE';
     freefallStartTime.current = null;
@@ -506,3 +522,5 @@ export default function GuardianAngelDashboard() {
     </>
   );
 }
+
+    
