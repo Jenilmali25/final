@@ -69,7 +69,7 @@ export default function GuardianAngelDashboard() {
   }, []);
 
   const speak = (text: string) => {
-    if (typeof window !== "undefined" && window.speechSynthesis) {
+    if (isClient && window.speechSynthesis) {
       const utterance = new SpeechSynthesisUtterance(text);
       window.speechSynthesis.speak(utterance);
     }
@@ -90,14 +90,14 @@ export default function GuardianAngelDashboard() {
   };
   
   const startVibration = () => {
-    if (navigator.vibrate) {
+    if (isClient && navigator.vibrate) {
         // A continuous vibration pattern
         navigator.vibrate([500, 200, 500, 200, 500]); 
     }
   };
 
   const stopVibration = () => {
-    if (navigator.vibrate) {
+    if (isClient && navigator.vibrate) {
       navigator.vibrate(0);
     }
   };
@@ -289,7 +289,7 @@ export default function GuardianAngelDashboard() {
   };
   
   const sendSMS = () => {
-    if ("geolocation" in navigator) {
+    if (isClient && "geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
@@ -297,10 +297,11 @@ export default function GuardianAngelDashboard() {
           console.log("SMS to be sent:", message);
           // In a real app, you would use a third-party service (like Twilio) to send this SMS.
           // The line below is a placeholder to show how it would be initiated.
-          // window.open(`sms:EMERGENCY_CONTACT_NUMBER?body=${encodeURIComponent(message)}`);
+          const smsUri = `sms:8778124700?body=${encodeURIComponent(message)}`;
+          window.location.href = smsUri;
           toast({
             title: "SMS Ready",
-            description: "Location acquired for SMS alert.",
+            description: "Opening messaging app to send alert.",
           });
         },
         (error) => {
@@ -312,7 +313,7 @@ export default function GuardianAngelDashboard() {
           });
         }
       );
-    } else {
+    } else if (isClient) {
       toast({
         title: "Geolocation Not Supported",
         description: "Your browser does not support geolocation.",
@@ -341,7 +342,7 @@ export default function GuardianAngelDashboard() {
           title: "Clear Command Detected",
           description: `Command: "${result.filteredSpeech}". Initiating emergency protocol.`,
         });
-        triggerEmergency(`Voice command: ${result.filteredSpeech}`, true);
+        triggerEmergency(`Voice command: ${result.filteredSpeech}`);
       } else {
         toast({
           title: "Command Unclear",
