@@ -28,8 +28,8 @@ import { filterAudioCommands } from "@/ai/flows/filter-audio-commands";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "./ui/separator";
 
-// Siren sound in base64 format (WAV for better compatibility)
-const SIREN_SOUND_DATA_URI = "data:audio/wav;base64,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";
+// Siren sound using uploaded MP3
+const SIREN_SOUND_FILE = "/loud-emergency-alarm-54635.mp3";
 
 
 // Fall Detection Thresholds
@@ -126,7 +126,7 @@ export default function GuardianAngelDashboard() {
     setStatusIcon(<AlertTriangle className="h-8 w-8 text-destructive animate-ping" />);
     playSiren();
     startVibration();
-    speak("Fall detected. Please check your safety.");
+    speak("Emergency! Emergency! A fall has been detected. Please respond immediately. If you are unable to move or speak, help is on the way. Stay calm.");
     // No call is made here, just the alert.
   }, [isEmergency]);
 
@@ -409,7 +409,7 @@ export default function GuardianAngelDashboard() {
 
   return (
     <>
-      <audio ref={audioRef} src={SIREN_SOUND_DATA_URI} />
+      <audio ref={audioRef} src={SIREN_SOUND_FILE} />
       <Card className="w-full max-w-md shadow-2xl bg-card/80 backdrop-blur-sm">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center gap-2">
